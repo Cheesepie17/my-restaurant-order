@@ -8,10 +8,23 @@ const db = require('./database/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const fs = require('fs');
+
+// Helper หา path ของไฟล์ HTML (รองรับทั้งใน public/ และ root)
+function getHtmlPath(filename) {
+  const publicPath = path.join(__dirname, 'public', filename);
+  if (fs.existsSync(publicPath)) {
+    return publicPath;
+  }
+  return path.join(__dirname, filename);
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+
 
 const os = require('os');
 
@@ -156,7 +169,7 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
     for (const item of items) {
       const menuItemId = parseInt(item.menu_item_id, 10);
       const qty = parseInt(item.quantity, 10);
-      const specialReq = (item.special_request || '').toString().slice(0, 150).trim();
+      const specialReq = (item.special_request || '').toString().slice(0, 250).trim();
 
       if (isNaN(qty) || qty <= 0) {
         return res.status(400).json({ success: false, error: 'จำนวนสินค้าไม่ถูกต้อง' });
@@ -170,17 +183,24 @@ app.post('/api/orders', orderLimiter, async (req, res) => {
         });
       }
 
-      const itemTotal = foundItem.price * qty;
+      // ใช้ราคาจาก client ที่รวม option เสริมแล้ว หรือ fallback เป็นราคาฐาน (ไม่ให้ต่ำกว่าราคาฐาน)
+      let itemUnitPrice = parseFloat(item.unit_price);
+      if (isNaN(itemUnitPrice) || itemUnitPrice < foundItem.price) {
+        itemUnitPrice = foundItem.price;
+      }
+
+      const itemTotal = itemUnitPrice * qty;
       calculatedTotalPrice += itemTotal;
 
       validatedOrderItems.push({
         menu_item_id: foundItem.id,
         item_name: foundItem.name,
-        price: foundItem.price,
+        price: itemUnitPrice,
         quantity: qty,
         special_request: specialReq
       });
     }
+
 
     const sanitizedNote = (customer_note || '').toString().slice(0, 300).trim();
 
@@ -381,20 +401,21 @@ app.get('/api/host-info', (req, res) => {
 
 // Route aliases เพื่อความสะดวก
 app.get('/order', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'order-form.html'));
+  res.sendFile(getHtmlPath('order-form.html'));
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'order-dashboard.html'));
+  res.sendFile(getHtmlPath('order-dashboard.html'));
 });
 
 app.get('/kitchen', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'order-dashboard.html'));
+  res.sendFile(getHtmlPath('order-dashboard.html'));
 });
 
 app.get('/qr', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'qr-generator.html'));
+  res.sendFile(getHtmlPath('qr-generator.html'));
 });
+
 
 // Start Server
 app.listen(PORT, '0.0.0.0', () => {
