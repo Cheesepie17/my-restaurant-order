@@ -832,9 +832,14 @@
       }
     }
 
-    // Reports Modal
+    // Reports Modal (คำนวณทันที 0ms เพื่อความรวดเร็วสูงสุด)
     async function openReportModal() {
       document.getElementById('reportModal').classList.add('open');
+      
+      // 1. คำนวณจาก ordersList ในเครื่องทันที (ไม่ต้องรอโหลด)
+      renderInstantReportFromMemory();
+
+      // 2. ดึงจาก API มาอัปเดตเสริม
       try {
         const res = await fetch('/api/reports/daily');
         const json = await res.json();
@@ -842,8 +847,87 @@
           renderReportsData(json.data);
         }
       } catch (e) {
-        console.error('Fetch report error:', e);
+        console.warn('API report warning:', e);
       }
+    }
+
+    function renderInstantReportFromMemory() {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      
+      // คำนวณรายวัน
+      const dailyMap = {};
+      const dishCountMap = {};
+      const tableMap = { 1: { count: 0, sales: 0 }, 2: { count: 0, sales: 0 }, 3: { count: 0, sales: 0 }, 4: { count: 0, sales: 0 } };
+
+      ordersList.forEach(o => {
+        if (o.status === 'cancelled') return;
+        const dStr = (o.created_at || '').slice(0, 10) || todayStr;
+        if (!dailyMap[dStr]) {
+          dailyMap[dStr] = { date: dStr, total_orders: 0, served_sales: 0, total_sales: 0 };
+        }
+        dailyMap[dStr].total_orders++;
+        dailyMap[dStr].total_sales += Number(o.total_price) || 0;
+        if (o.status === 'served') {
+          dailyMap[dStr].served_sales += Number(o.total_price) || 0;
+        }
+
+        // Table stats (today)
+        if (dStr === todayStr && tableMap[o.table_no]) {
+          tableMap[o.table_no].count++;
+          tableMap[o.table_no].sales += Number(o.total_price) || 0;
+        }
+
+        // Dishes
+        (o.items || []).forEach(it => {
+          if (!dishCountMap[it.item_name]) {
+            dishCountMap[it.item_name] = { name: it.item_name, qty: 0, amount: 0 };
+          }
+          dishCountMap[it.item_name].qty += it.quantity;
+          dishCountMap[it.item_name].amount += it.price * it.quantity;
+        });
+      });
+
+      // Render Daily
+      const dailyArr = Object.values(dailyMap);
+      const dailyTbody = document.getElementById('dailyReportTableBody');
+      if (dailyArr.length > 0) {
+        dailyTbody.innerHTML = dailyArr.map(d => `
+          <tr>
+            <td><strong>${d.date}</strong></td>
+            <td>${d.total_orders} รายการ</td>
+            <td>฿${d.served_sales.toLocaleString('th-TH')}</td>
+            <td style="color: #34d399; font-weight:700;">฿${d.total_sales.toLocaleString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } else {
+        dailyTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 14px;">ยังไม่มีข้อมูลยอดขาย</td></tr>';
+      }
+
+      // Render Top Dishes
+      const topArr = Object.values(dishCountMap).sort((a, b) => b.qty - a.qty).slice(0, 5);
+      const topTbody = document.getElementById('topDishesTableBody');
+      if (topArr.length > 0) {
+        topTbody.innerHTML = topArr.map((d, i) => `
+          <tr>
+            <td><span class="top-dish-badge">อันดับ ${i + 1}</span></td>
+            <td><strong>${d.name}</strong></td>
+            <td>${d.qty} จาน</td>
+            <td style="color: #60a5fa; font-weight:700;">฿${d.amount.toLocaleString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } else {
+        topTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 14px;">ยังไม่มีข้อมูลเมนูขายดี</td></tr>';
+      }
+
+      // Render Table Stats
+      const tableTbody = document.getElementById('tableStatsTableBody');
+      tableTbody.innerHTML = [1, 2, 3, 4].map(t => `
+        <tr>
+          <td><strong>โต๊ะ ${t}</strong></td>
+          <td>${tableMap[t].count} ออเดอร์</td>
+          <td style="color: #fbbf24; font-weight:700;">฿${tableMap[t].sales.toLocaleString('th-TH')}</td>
+        </tr>
+      `).join('');
     }
 
     function closeReportModal() {
@@ -851,10 +935,8 @@
     }
 
     function renderReportsData(data) {
-      // 1. Daily stats
-      const dailyTbody = document.getElementById('dailyReportTableBody');
       if (data.daily && data.daily.length > 0) {
-        dailyTbody.innerHTML = data.daily.map(d => `
+        document.getElementById('dailyReportTableBody').innerHTML = data.daily.map(d => `
           <tr>
             <td><strong>${d.order_date}</strong></td>
             <td>${d.total_orders} รายการ</td>
@@ -862,14 +944,10 @@
             <td style="color: #34d399; font-weight:700;">฿${(d.total_sales || 0).toLocaleString('th-TH')}</td>
           </tr>
         `).join('');
-      } else {
-        dailyTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">ยังไม่มีข้อมูลยอดขาย</td></tr>';
       }
 
-      // 2. Top Dishes
-      const topTbody = document.getElementById('topDishesTableBody');
       if (data.topDishes && data.topDishes.length > 0) {
-        topTbody.innerHTML = data.topDishes.map((dish, i) => `
+        document.getElementById('topDishesTableBody').innerHTML = data.topDishes.map((dish, i) => `
           <tr>
             <td><span class="top-dish-badge">อันดับ ${i + 1}</span></td>
             <td><strong>${dish.item_name}</strong></td>
@@ -877,24 +955,19 @@
             <td style="color: #60a5fa; font-weight:700;">฿${(dish.total_amount || 0).toLocaleString('th-TH')}</td>
           </tr>
         `).join('');
-      } else {
-        topTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">ยังไม่มีข้อมูล</td></tr>';
       }
 
-      // 3. Table stats
-      const tableTbody = document.getElementById('tableStatsTableBody');
       if (data.tableStats && data.tableStats.length > 0) {
-        tableTbody.innerHTML = data.tableStats.map(t => `
+        document.getElementById('tableStatsTableBody').innerHTML = data.tableStats.map(t => `
           <tr>
             <td><strong>โต๊ะ ${t.table_no}</strong></td>
             <td>${t.total_orders} ออเดอร์</td>
             <td style="color: #fbbf24; font-weight:700;">฿${(t.table_sales || 0).toLocaleString('th-TH')}</td>
           </tr>
         `).join('');
-      } else {
-        tableTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">ยังไม่มีข้อมูลวันนี้</td></tr>';
       }
     }
+
 
     window.addEventListener('DOMContentLoaded', () => {
       fetchOrders(true);
