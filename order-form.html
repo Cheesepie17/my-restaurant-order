@@ -3,19 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>สั่งอาหาร - Restaurant QR Order</title>
+  <title>ครัวฟู้ดไทม์ (Food Time) - สั่งอาหาร</title>
+  
+  <!-- iOS PWA / Home Screen App Branding -->
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Food Time">
+  <meta name="theme-color" content="#fdfbf7">
+
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #e11d48;
-      --primary-hover: #be123c;
-      --primary-light: #ffe4e6;
-      --bg: #f8fafc;
+      --primary: #c86432;
+      --primary-hover: #b05224;
+      --primary-light: #faede6;
+      --bg: #fdfbf7;
       --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --success: #10b981;
+      --text: #2d1f16;
+      --text-muted: #7c6a5d;
+      --border: #eddcc9;
+      --border-light: #f5ebe1;
+      --success: #15803d;
       --accent-orange: #d97706;
     }
 
@@ -30,44 +40,63 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      padding-bottom: 90px;
+      padding-bottom: 95px;
     }
 
-    /* Top Table Header */
+    /* Top Brand Header */
     .header {
       background: white;
       position: sticky;
       top: 0;
       z-index: 40;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border-bottom: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(45, 31, 22, 0.06);
+      border-bottom: 1px solid var(--border-light);
     }
 
     .header-content {
       max-width: 650px;
       margin: 0 auto;
-      padding: 14px 16px;
+      padding: 10px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .restaurant-title {
-      font-size: 17px;
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .brand-title {
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .table-tag {
       background: var(--primary);
       color: white;
       font-weight: 600;
-      font-size: 14px;
-      padding: 4px 12px;
+      font-size: 13px;
+      padding: 5px 14px;
       border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      box-shadow: 0 2px 5px rgba(200, 100, 50, 0.25);
     }
 
     /* Category Nav Tabs */
@@ -76,9 +105,9 @@
       overflow-x: auto;
       white-space: nowrap;
       padding: 8px 16px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       position: sticky;
-      top: 57px;
+      top: 65px;
       z-index: 30;
       scrollbar-width: none;
     }
@@ -92,7 +121,7 @@
       padding: 6px 14px;
       margin-right: 8px;
       border-radius: 20px;
-      background: #f1f5f9;
+      background: #f7f1ea;
       color: var(--text-muted);
       font-size: 13px;
       font-weight: 500;
@@ -116,16 +145,16 @@
       background: #fef2f2;
       border: 1px solid #fecaca;
       color: #991b1b;
-      padding: 16px;
+      padding: 14px;
       border-radius: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     /* Category Section */
     .menu-section {
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
 
     .section-title {
@@ -158,18 +187,19 @@
       background: var(--card-bg);
       border-radius: 14px;
       padding: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-      border: 1px solid var(--border);
+      box-shadow: 0 1px 4px rgba(45, 31, 22, 0.05);
+      border: 1px solid var(--border-light);
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: transform 0.1s, border-color 0.2s;
     }
 
     .menu-card:active {
       transform: scale(0.99);
+      border-color: var(--primary);
     }
 
     .menu-info {
@@ -218,8 +248,8 @@
       right: 0;
       background: white;
       padding: 12px 16px;
-      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-      border-top: 1px solid var(--border);
+      box-shadow: 0 -4px 16px rgba(45, 31, 22, 0.08);
+      border-top: 1px solid var(--border-light);
       z-index: 50;
       transform: translateY(120%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -265,7 +295,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 8px rgba(225, 29, 72, 0.3);
+      box-shadow: 0 4px 10px rgba(200, 100, 50, 0.3);
     }
 
     /* Modal / Drawer */
@@ -275,7 +305,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(45, 31, 22, 0.6);
       backdrop-filter: blur(3px);
       z-index: 100;
       display: none;
@@ -306,7 +336,7 @@
 
     .modal-header {
       padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-light);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -318,7 +348,7 @@
     }
 
     .close-btn {
-      background: #f1f5f9;
+      background: #f7f1ea;
       border: none;
       width: 32px;
       height: 32px;
@@ -328,7 +358,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #64748b;
+      color: var(--text-muted);
     }
 
     .modal-body {
@@ -339,15 +369,15 @@
 
     .modal-footer {
       padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      background: #fafafa;
+      border-top: 1px solid var(--border-light);
+      background: #faf6f0;
     }
 
-    /* Grab/LINE MAN Style Options Section */
+    /* Options Section */
     .option-group {
       margin-bottom: 20px;
       padding-bottom: 16px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-light);
     }
 
     .option-title {
@@ -362,8 +392,8 @@
 
     .option-badge-required {
       font-size: 11px;
-      background: #fee2e2;
-      color: #dc2626;
+      background: #fdf2e9;
+      color: var(--primary);
       padding: 2px 8px;
       border-radius: 10px;
       font-weight: 600;
@@ -371,8 +401,8 @@
 
     .option-badge-optional {
       font-size: 11px;
-      background: #f1f5f9;
-      color: #64748b;
+      background: #f7f1ea;
+      color: var(--text-muted);
       padding: 2px 8px;
       border-radius: 10px;
       font-weight: 500;
@@ -390,7 +420,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 12px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-light);
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s;
@@ -398,7 +428,7 @@
 
     .option-row:hover, .option-row.selected {
       border-color: var(--primary);
-      background: #fff1f2;
+      background: var(--primary-light);
     }
 
     .option-label {
@@ -427,7 +457,7 @@
     .spice-pill {
       text-align: center;
       padding: 8px 4px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-light);
       border-radius: 8px;
       font-size: 12px;
       font-weight: 500;
@@ -442,7 +472,7 @@
       font-weight: 600;
     }
 
-    /* Structured Order Summary Table (สไตล์ภาพสรุปคำสั่งซื้อ) */
+    /* Structured Order Summary Table */
     .order-summary-card {
       background: white;
       border: 1px solid var(--border);
@@ -455,7 +485,7 @@
       display: grid;
       grid-template-columns: 3fr 1fr 1fr 1.2fr;
       padding: 10px 14px;
-      background: #f8fafc;
+      background: #faf6f0;
       border-bottom: 1px solid var(--border);
       font-size: 12px;
       font-weight: 600;
@@ -468,7 +498,7 @@
 
     .summary-item-block {
       padding: 12px 14px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid var(--border-light);
     }
 
     .summary-item-block:last-child {
@@ -499,7 +529,7 @@
       display: grid;
       grid-template-columns: 1.2fr 1.8fr 1fr 1.2fr;
       font-size: 12px;
-      color: #64748b;
+      color: #7c6a5d;
       padding: 2px 0;
       align-items: center;
     }
@@ -510,11 +540,11 @@
     }
 
     .summary-sub-type {
-      color: #94a3b8;
+      color: #a89a8f;
     }
 
     .summary-sub-val {
-      color: #334155;
+      color: #4a382d;
       font-weight: 500;
     }
 
@@ -530,7 +560,7 @@
       width: 26px;
       height: 26px;
       border-radius: 6px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border);
       background: white;
       font-weight: 700;
       font-size: 13px;
@@ -557,7 +587,7 @@
       display: flex;
       justify-content: space-between;
       font-size: 13px;
-      color: #64748b;
+      color: var(--text-muted);
       margin-bottom: 6px;
     }
 
@@ -586,10 +616,9 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.3);
+      box-shadow: 0 4px 10px rgba(200, 100, 50, 0.3);
     }
 
-    /* Success Card */
     .success-modal {
       text-align: center;
       padding: 32px 16px;
@@ -618,10 +647,16 @@
 </head>
 <body>
 
-  <!-- Header โต๊ะ -->
+  <!-- Header โต๊ะ & โลโก้ร้าน -->
   <header class="header">
     <div class="header-content">
-      <div class="restaurant-title">🍜 เมนูอาหาร</div>
+      <div class="brand-area">
+        <img src="/logo.png" alt="ครัวฟู้ดไทม์" class="brand-logo" onerror="this.style.display='none'">
+        <div>
+          <div class="brand-title">ครัวฟู้ดไทม์</div>
+          <div class="brand-sub">Food Time • อาหารตามสั่ง & ก๋วยเตี๋ยว</div>
+        </div>
+      </div>
       <div id="tableBadge" class="table-tag">โต๊ะ -</div>
     </div>
   </header>
@@ -635,7 +670,7 @@
   <main class="container">
     <div id="warningBanner" class="warning-banner" style="display: none;"></div>
     <div id="menuContainer">
-      <div style="text-align:center; padding: 40px; color: #94a3b8;">⏳ กำลังโหลดเมนูอาหาร...</div>
+      <div style="text-align:center; padding: 40px; color: var(--text-muted);">⏳ กำลังโหลดเมนูอาหาร...</div>
     </div>
   </main>
 
@@ -658,7 +693,7 @@
       <div class="modal-header">
         <div>
           <div class="modal-title" id="optItemName">ชื่ออาหาร</div>
-          <div style="font-size: 13px; color: var(--primary); font-weight: 700;" id="optItemBasePrice">฿0.00</div>
+          <div style="font-size: 14px; color: var(--primary); font-weight: 700;" id="optItemBasePrice">฿0.00</div>
         </div>
         <button class="close-btn" onclick="closeOptionModal()">✕</button>
       </div>
@@ -776,7 +811,7 @@
           </div>
         </div>
 
-        <!-- 5. หมายเหตุเฉพาะจานนี้ -->
+        <!-- 5. หมายเหตุเฉพาะจาน -->
         <div class="option-group" style="border-bottom:none; margin-bottom:0;">
           <div class="option-title">
             <span>📝 หมายเหตุ (เฉพาะจานนี้)</span>
@@ -824,9 +859,9 @@
             <div class="total-line">
               <div>
                 <div>ราคารวม</div>
-                <div style="font-size: 11px; color: #94a3b8;">รวมภาษี (฿0.00)</div>
+                <div style="font-size: 11px; color: #a89a8f;">รวมภาษี (฿0.00)</div>
               </div>
-              <div id="summarySubTotal" style="font-weight: 600; color: #334155;">฿0.00</div>
+              <div id="summarySubTotal" style="font-weight: 600; color: var(--text);">฿0.00</div>
             </div>
             <div class="grand-total-line">
               <div>ทั้งหมด</div>
@@ -857,7 +892,7 @@
         <div class="success-desc" id="successDesc" style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
           ห้องครัวได้รับออเดอร์แล้ว กำลังเริ่มเตรียมอาหารให้คุณ
         </div>
-        <button class="submit-order-btn" style="background: #15803d;" onclick="resetAfterOrder()">
+        <button class="submit-order-btn" style="background: var(--success);" onclick="resetAfterOrder()">
           สั่งอาหารเพิ่ม
         </button>
       </div>
@@ -869,10 +904,9 @@
     let menuData = [];
     let cart = [];
 
-    // Modal state for customizer
     let currentItem = null;
     let modalMeat = { name: 'หมูสับ', price: 0 };
-    let modalEggs = []; // [{ name, price }]
+    let modalEggs = [];
     let modalPortion = { name: 'ปกติ', price: 0 };
     let modalSpice = 'เผ็ดปกติ';
     let modalQty = 1;
@@ -1014,7 +1048,6 @@
         portionSec.style.display = 'block';
         spiceSec.style.display = 'block';
         
-        // Reset defaults
         modalMeat = { name: 'หมูสับ', price: 0 };
         document.querySelectorAll('#meatList .option-row').forEach(row => {
           const isDefault = row.querySelector('input').value === 'หมูสับ';
@@ -1109,7 +1142,6 @@
 
       const note = document.getElementById('optSpecialNote').value.trim();
 
-      // Structure text for backend
       const parts = [];
       if (modalMeat.name) parts.push(`เนื้อสัตว์: ${modalMeat.name}`);
       if (modalEggs.length > 0) parts.push(`เพิ่มไข่: ${modalEggs.map(e => e.name).join(', ')}`);
@@ -1185,7 +1217,6 @@
       renderStructuredCartTable();
     }
 
-    // Render สรุปคำสั่งซื้อสไตล์ Grab / LINE MAN (ตามรูปภาพของผู้ใช้)
     function renderStructuredCartTable() {
       const tbody = document.getElementById('cartItemsTableBody');
       const subTotalElem = document.getElementById('summarySubTotal');
@@ -1205,7 +1236,6 @@
         const block = document.createElement('div');
         block.className = 'summary-item-block';
 
-        // 1. แถวชื่ออาหารหลัก
         let mainRowHtml = `
           <div class="summary-main-row">
             <div>${item.item_name}</div>
@@ -1215,10 +1245,8 @@
           </div>
         `;
 
-        // 2. หมายเหตุ (สีส้ม)
         let noteHtml = item.itemNote ? `<div class="summary-note-text">${item.itemNote}</div>` : '';
 
-        // 3. แถวย่อยตัวเลือกเสริม
         let subRowsHtml = '';
 
         if (item.eggs && item.eggs.length > 0) {
@@ -1267,10 +1295,9 @@
           `;
         }
 
-        // 4. ปุ่มปรับจำนวน
         let controlsHtml = `
           <div class="summary-qty-controls">
-            <span style="font-size: 11px; color: #94a3b8; margin-right: 6px;">ปรับจำนวน:</span>
+            <span style="font-size: 11px; color: var(--text-muted); margin-right: 6px;">ปรับจำนวน:</span>
             <button class="qty-btn" onclick="changeCartQty(${item.cartId}, -1)">-</button>
             <span class="qty-display">${item.quantity}</span>
             <button class="qty-btn" onclick="changeCartQty(${item.cartId}, 1)">+</button>

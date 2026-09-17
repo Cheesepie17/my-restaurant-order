@@ -290,12 +290,15 @@
         card.className = 'qr-card';
 
         card.innerHTML = `
-          <div class="table-badge">โต๊ะ ${tableNum}</div>
-          <div class="scan-title">📱 สแกนเพื่อสั่งอาหาร</div>
+          <img src="/logo.png" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; margin-bottom: 8px;" onerror="this.style.display='none'">
+          <div style="font-size: 15px; font-weight: 700; color: #2d1f16; margin-bottom: 4px;">ครัวฟู้ดไทม์ (Food Time)</div>
+          <div class="table-badge" style="background: #c86432 !important;">โต๊ะ ${tableNum}</div>
+          <div class="scan-title" style="margin-bottom: 8px;">📱 สแกนเพื่อสั่งอาหาร</div>
           <div class="qr-container" id="qr-box-${tableNum}"></div>
           <div class="instruction">สแกนด้วยกล้องมือถือหรือ LINE ได้ทันที</div>
           <div class="table-url">${targetUrl}</div>
         `;
+
 
         qrGrid.appendChild(card);
 

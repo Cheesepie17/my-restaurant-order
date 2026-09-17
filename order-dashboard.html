@@ -4,7 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>หน้าจอห้องครัว & สรุปยอดขาย - Live Orders Dashboard</title>
+  <!-- iOS PWA / Home Screen App Branding -->
+  <link rel="apple-touch-icon" href="/logo.png">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Food Time">
+  <meta name="theme-color" content="#0f172a">
+
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg: #0f172a;
@@ -419,14 +428,19 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="title-area">
-      <h1>
-        👨‍🍳 ครัว & รายการออเดอร์
-        <span class="live-badge">
+      <h1 style="display: flex; align-items: center; gap: 12px;">
+        <img src="/logo.png" alt="ครัวฟู้ดไทม์" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #334155;" onerror="this.style.display='none'">
+        <div>
+          <div style="font-size: 19px; line-height: 1.2;">ครัวฟู้ดไทม์ (Food Time)</div>
+          <div style="font-size: 12px; color: var(--text-muted); font-weight: 400;">ห้องครัว & จัดการออเดอร์</div>
+        </div>
+        <span class="live-badge" style="margin-left: 6px;">
           <span class="pulse-dot"></span>
           Live Sync (3s)
         </span>
       </h1>
     </div>
+
 
     <div class="controls-area">
       <button class="btn btn-report" onclick="openReportModal()">
