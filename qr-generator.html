@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เครื่องมือสร้าง QR Code สั่งอาหารประจำโต๊ะ</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: #1f2937;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .no-print-card {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #dc2626;
+    }
+
+    .btn-secondary {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #2563eb;
+    }
+
+    /* Print Grid Layout */
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .qr-card {
+      background: white;
+      border: 2px dashed #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .table-badge {
+      background: #ef4444;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 6px 20px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+    }
+
+    .scan-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 14px;
+    }
+
+    .qr-container {
+      background: white;
+      padding: 12px;
+      border: 1px solid #f3f4f6;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+    }
+
+    .qr-container img {
+      margin: 0 auto;
+    }
+
+    .table-url {
+      font-size: 11px;
+      color: #9ca3af;
+      word-break: break-all;
+      max-width: 260px;
+    }
+
+    .instruction {
+      font-size: 12px;
+      color: #4b5563;
+      margin-top: 6px;
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .qr-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 15mm;
+        height: 100vh;
+        padding: 10mm;
+      }
+
+      .qr-card {
+        border: 2px dashed #9ca3af;
+        box-shadow: none;
+        padding: 20px;
+        page-break-inside: avoid;
+      }
+
+      .table-badge {
+        background: #ef4444 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="no-print no-print-card">
+      <h1>🖨️ เครื่องมือสร้าง QR Code สั่งอาหารประจำโต๊ะ</h1>
+      <p class="subtitle">ระบบจะสร้าง QR Code อัตโนมัติพร้อมเลขโต๊ะ ให้คุณสามารถสั่งพิมพ์และตัดไปวางที่โต๊ะได้ทันที</p>
+
+      <div class="form-grid">
+        <div class="form-group" style="grid-column: span 2;">
+          <label for="baseUrl">ลิงก์หน้าสั่งอาหาร (Base Order URL):</label>
+          <input type="url" id="baseUrl" placeholder="http://localhost:3000/order">
+        </div>
+        <div class="form-group">
+          <label for="startTable">เลขโต๊ะเริ่มต้น:</label>
+          <input type="number" id="startTable" value="1" min="1" max="100">
+        </div>
+        <div class="form-group">
+          <label for="totalTables">จำนวนโต๊ะทั้งหมด:</label>
+          <input type="number" id="totalTables" value="4" min="1" max="20">
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-primary" onclick="generateQRCodes()">
+          ⚡ สร้าง QR Code ใหม่
+        </button>
+        <button class="btn-secondary" onclick="window.print()">
+          🖨️ สั่งพิมพ์การ์ดประจำโต๊ะ (4 โต๊ะ/หน้า)
+        </button>
+      </div>
+    </div>
+
+    <!-- แสดงผล QR Code Cards -->
+    <div id="qrGrid" class="qr-grid">
+      <!-- QR Cards will be dynamically generated here -->
+    </div>
+  </div>
+
+  <script>
+    // ตั้งค่า URL เริ่มต้น
+    window.onload = async () => {
+      let defaultUrl = `${window.location.origin}/order`;
+      
+      // ถ้าเปิดจาก localhost บนคอมพิวเตอร์ ให้ดึง Wi-Fi IP แต่ถ้ารันบน Render ให้ใช้ชื่อโดเมนจริงเสมอ
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          const res = await fetch('/api/host-info');
+          const json = await res.json();
+          if (json && json.localOrderUrl) {
+            defaultUrl = json.localOrderUrl;
+          }
+        } catch (e) {
+          console.warn('Cannot fetch host info:', e);
+        }
+      }
+
+      document.getElementById('baseUrl').value = defaultUrl;
+      generateQRCodes();
+    };
+
+
+
+    function generateQRCodes() {
+      const baseUrl = document.getElementById('baseUrl').value.trim() || `${window.location.origin}/order`;
+      const startTable = parseInt(document.getElementById('startTable').value, 10) || 1;
+      const totalTables = parseInt(document.getElementById('totalTables').value, 10) || 4;
+
+      const qrGrid = document.getElementById('qrGrid');
+      qrGrid.innerHTML = '';
+
+      for (let i = 0; i < totalTables; i++) {
+        const tableNum = startTable + i;
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        const targetUrl = `${baseUrl}${separator}table=${tableNum}`;
+
+        const card = document.createElement('div');
+        card.className = 'qr-card';
+
+        card.innerHTML = `
+          <div class="table-badge">โต๊ะ ${tableNum}</div>
+          <div class="scan-title">📱 สแกนเพื่อสั่งอาหาร</div>
+          <div class="qr-container" id="qr-box-${tableNum}"></div>
+          <div class="instruction">สแกนด้วยกล้องมือถือหรือ LINE ได้ทันที</div>
+          <div class="table-url">${targetUrl}</div>
+        `;
+
+        qrGrid.appendChild(card);
+
+        // Render QR Code ด้วย QRCode.js
+        new QRCode(document.getElementById(`qr-box-${tableNum}`), {
+          text: targetUrl,
+          width: 170,
+          height: 170,
+          colorDark: "#111827",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    }
+  </script>
+</body>
+</html>

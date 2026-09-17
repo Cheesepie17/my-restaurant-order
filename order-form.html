@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>สั่งอาหาร - Restaurant QR Order</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #e11d48;
+      --primary-hover: #be123c;
+      --primary-light: #ffe4e6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --accent-orange: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 90px;
+    }
+
+    /* Top Table Header */
+    .header {
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-content {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .restaurant-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .table-tag {
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Category Nav Tabs */
+    .category-nav {
+      background: white;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 57px;
+      z-index: 30;
+      scrollbar-width: none;
+    }
+
+    .category-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-btn {
+      display: inline-block;
+      padding: 6px 14px;
+      margin-right: 8px;
+      border-radius: 20px;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .cat-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .warning-banner {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    /* Category Section */
+    .menu-section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* Menu Item Card */
+    .menu-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .menu-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .menu-card:active {
+      transform: scale(0.99);
+    }
+
+    .menu-info {
+      flex: 1;
+    }
+
+    .menu-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .menu-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .menu-price {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .add-btn {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Bottom Floating Cart Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 12px 16px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
+      border-top: 1px solid var(--border);
+      z-index: 50;
+      transform: translateY(120%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bottom-bar.show {
+      transform: translateY(0);
+    }
+
+    .bottom-bar-inner {
+      max-width: 650px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cart-summary-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cart-count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .cart-total {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .view-cart-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 8px rgba(225, 29, 72, 0.3);
+    }
+
+    /* Modal / Drawer */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: white;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: #f1f5f9;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: #fafafa;
+    }
+
+    /* Grab/LINE MAN Style Options Section */
+    .option-group {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .option-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .option-badge-required {
+      font-size: 11px;
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .option-badge-optional {
+      font-size: 11px;
+      background: #f1f5f9;
+      color: #64748b;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-row:hover, .option-row.selected {
+      border-color: var(--primary);
+      background: #fff1f2;
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .option-price-tag {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .spice-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .spice-pill {
+      text-align: center;
+      padding: 8px 4px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: white;
+    }
+
+    .spice-pill.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+
+    /* Structured Order Summary Table (สไตล์ภาพสรุปคำสั่งซื้อ) */
+    .order-summary-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .summary-table-header {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1.2fr;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .summary-table-header div:not(:first-child) {
+      text-align: right;
+    }
+
+    .summary-item-block {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .summary-item-block:last-child {
+      border-bottom: none;
+    }
+
+    .summary-main-row {
+      display: grid;
+      grid-template-columns: 3fr 1fr 1fr 1.2fr;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      align-items: center;
+    }
+
+    .summary-main-row div:not(:first-child) {
+      text-align: right;
+    }
+
+    .summary-note-text {
+      color: var(--accent-orange);
+      font-size: 12px;
+      font-weight: 600;
+      margin: 4px 0 6px 0;
+    }
+
+    .summary-sub-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.8fr 1fr 1.2fr;
+      font-size: 12px;
+      color: #64748b;
+      padding: 2px 0;
+      align-items: center;
+    }
+
+    .summary-sub-row div:nth-child(3),
+    .summary-sub-row div:nth-child(4) {
+      text-align: right;
+    }
+
+    .summary-sub-type {
+      color: #94a3b8;
+    }
+
+    .summary-sub-val {
+      color: #334155;
+      font-weight: 500;
+    }
+
+    .summary-qty-controls {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .qty-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qty-display {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .summary-totals-box {
+      border-top: 1px solid var(--border);
+      padding: 12px 14px;
+      background: #ffffff;
+    }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .grand-total-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .submit-order-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(225, 29, 72, 0.3);
+    }
+
+    /* Success Card */
+    .success-modal {
+      text-align: center;
+      padding: 32px 16px;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: #dcfce7;
+      color: #15803d;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #15803d;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header โต๊ะ -->
+  <header class="header">
+    <div class="header-content">
+      <div class="restaurant-title">🍜 เมนูอาหาร</div>
+      <div id="tableBadge" class="table-tag">โต๊ะ -</div>
+    </div>
+  </header>
+
+  <!-- Category Nav Tabs -->
+  <nav id="categoryNav" class="category-nav">
+    <!-- Category buttons generated dynamically -->
+  </nav>
+
+  <!-- Main Menu Content -->
+  <main class="container">
+    <div id="warningBanner" class="warning-banner" style="display: none;"></div>
+    <div id="menuContainer">
+      <div style="text-align:center; padding: 40px; color: #94a3b8;">⏳ กำลังโหลดเมนูอาหาร...</div>
+    </div>
+  </main>
+
+  <!-- Bottom Floating Cart Bar -->
+  <div id="bottomBar" class="bottom-bar">
+    <div class="bottom-bar-inner">
+      <div class="cart-summary-text">
+        <span id="cartCount" class="cart-count">0 รายการ</span>
+        <span id="cartTotal" class="cart-total">฿0.00</span>
+      </div>
+      <button class="view-cart-btn" onclick="openCartModal()">
+        🛒 สรุปคำสั่งซื้อ
+      </button>
+    </div>
+  </div>
+
+  <!-- Grab/LINE MAN Style Customization Modal -->
+  <div id="itemOptionModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="optItemName">ชื่ออาหาร</div>
+          <div style="font-size: 13px; color: var(--primary); font-weight: 700;" id="optItemBasePrice">฿0.00</div>
+        </div>
+        <button class="close-btn" onclick="closeOptionModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- 1. เลือกเนื้อสัตว์ -->
+        <div id="meatSection" class="option-group">
+          <div class="option-title">
+            <span>🥩 เนื้อสัตว์</span>
+            <span class="option-badge-required">บังคับเลือก 1 อย่าง</span>
+          </div>
+          <div class="option-list" id="meatList">
+            <label class="option-row" onclick="selectMeat('ไก่', 0, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="ไก่">
+                <span>ไก่</span>
+              </div>
+              <span class="option-price-tag">+0.00</span>
+            </label>
+            <label class="option-row selected" onclick="selectMeat('หมูสับ', 0, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="หมูสับ" checked>
+                <span>หมูสับ</span>
+              </div>
+              <span class="option-price-tag">+0.00</span>
+            </label>
+            <label class="option-row" onclick="selectMeat('หมูชิ้น', 0, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="หมูชิ้น">
+                <span>หมูชิ้น</span>
+              </div>
+              <span class="option-price-tag">+0.00</span>
+            </label>
+            <label class="option-row" onclick="selectMeat('หมูกรอบ', 15, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="หมูกรอบ">
+                <span>หมูกรอบ</span>
+              </div>
+              <span class="option-price-tag">+15.00</span>
+            </label>
+            <label class="option-row" onclick="selectMeat('ทะเล / กุ้ง', 20, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="ทะเล / กุ้ง">
+                <span>ทะเล / กุ้ง</span>
+              </div>
+              <span class="option-price-tag">+20.00</span>
+            </label>
+            <label class="option-row" onclick="selectMeat('เนื้อวัว', 20, this)">
+              <div class="option-label">
+                <input type="radio" name="optMeat" value="เนื้อวัว">
+                <span>เนื้อวัว</span>
+              </div>
+              <span class="option-price-tag">+20.00</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. เพิ่มไข่ -->
+        <div id="eggSection" class="option-group">
+          <div class="option-title">
+            <span>🍳 เพิ่มไข่</span>
+            <span class="option-badge-optional">เลือกได้</span>
+          </div>
+          <div class="option-list">
+            <label class="option-row" onclick="toggleEgg('ไข่ดาว', 15, this)">
+              <div class="option-label">
+                <input type="checkbox" name="optEgg" value="ไข่ดาว" data-price="15">
+                <span>ไข่ดาว</span>
+              </div>
+              <span class="option-price-tag">+15.00</span>
+            </label>
+            <label class="option-row" onclick="toggleEgg('ไข่เจียว', 15, this)">
+              <div class="option-label">
+                <input type="checkbox" name="optEgg" value="ไข่เจียว" data-price="15">
+                <span>ไข่เจียว</span>
+              </div>
+              <span class="option-price-tag">+15.00</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. ปริมาณ -->
+        <div id="portionSection" class="option-group">
+          <div class="option-title">
+            <span>🍚 ปริมาณ</span>
+          </div>
+          <div class="option-list">
+            <label class="option-row selected" onclick="selectPortion('ปกติ', 0, this)">
+              <div class="option-label">
+                <input type="radio" name="optPortion" value="ปกติ" checked>
+                <span>ปกติ</span>
+              </div>
+              <span class="option-price-tag">+0.00</span>
+            </label>
+            <label class="option-row" onclick="selectPortion('พิเศษ', 10, this)">
+              <div class="option-label">
+                <input type="radio" name="optPortion" value="พิเศษ">
+                <span>พิเศษ (เพิ่มข้าว/กับ)</span>
+              </div>
+              <span class="option-price-tag">+10.00</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 4. ระดับความเผ็ด -->
+        <div id="spiceSection" class="option-group">
+          <div class="option-title">
+            <span>🌶️ ระดับความเผ็ด</span>
+          </div>
+          <div class="spice-grid">
+            <div class="spice-pill selected" onclick="selectSpice('เผ็ดปกติ', this)">เผ็ดปกติ</div>
+            <div class="spice-pill" onclick="selectSpice('เผ็ดน้อย', this)">เผ็ดน้อย</div>
+            <div class="spice-pill" onclick="selectSpice('ไม่เผ็ด', this)">ไม่เผ็ด</div>
+            <div class="spice-pill" onclick="selectSpice('เผ็ดมาก', this)">เผ็ดมาก 🔥</div>
+          </div>
+        </div>
+
+        <!-- 5. หมายเหตุเฉพาะจานนี้ -->
+        <div class="option-group" style="border-bottom:none; margin-bottom:0;">
+          <div class="option-title">
+            <span>📝 หมายเหตุ (เฉพาะจานนี้)</span>
+          </div>
+          <input type="text" id="optSpecialNote" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none;" placeholder="เช่น ขอช้อนด้วยนะคะ, ไม่ผัก, ไม่กระเทียม">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div class="qty-controls" style="display: flex; gap: 8px; align-items: center;">
+            <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
+            <span class="qty-display" id="modalQtyDisplay">1</span>
+            <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+          </div>
+          <div style="font-weight: 700; font-size: 18px; color: var(--primary);" id="modalTotalCalculated">
+            ฿0.00
+          </div>
+        </div>
+        <button class="submit-order-btn" onclick="confirmAddToCart()">
+          🛒 เพิ่มลงตะกร้า
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal (ตารางสรุปคำสั่งซื้อ) -->
+  <div id="cartModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">สรุปคำสั่งซื้อ (<span id="modalTableText">โต๊ะ -</span>)</div>
+        <button class="close-btn" onclick="closeCartModal()">✕</button>
+      </div>
+      <div class="modal-body" id="cartModalBody">
+        <div class="order-summary-card">
+          <div class="summary-table-header">
+            <div>รายการ</div>
+            <div>ราคา</div>
+            <div>จำนวน</div>
+            <div>ราคารวม</div>
+          </div>
+          <div id="cartItemsTableBody"></div>
+          
+          <div class="summary-totals-box">
+            <div class="total-line">
+              <div>
+                <div>ราคารวม</div>
+                <div style="font-size: 11px; color: #94a3b8;">รวมภาษี (฿0.00)</div>
+              </div>
+              <div id="summarySubTotal" style="font-weight: 600; color: #334155;">฿0.00</div>
+            </div>
+            <div class="grand-total-line">
+              <div>ทั้งหมด</div>
+              <div id="summaryGrandTotal" style="color: var(--primary);">฿0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 12px;">
+          <label style="display:block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px;">📝 หมายเหตุเพิ่มเติมสำหรับทั้งโต๊ะ (ถ้ามี):</label>
+          <textarea id="orderNote" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; height: 60px; outline: none;" placeholder="เช่น ขอแก้วน้ำเพิ่ม 2 ใบ, ขอเก้าอี้เด็ก"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="submitBtn" class="submit-order-btn" onclick="submitOrder()">
+          🚀 ยืนยันการสั่งซื้อ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-sheet" style="padding: 24px; border-radius: 20px;">
+      <div class="success-modal">
+        <div class="success-icon">✓</div>
+        <div class="success-title">ส่งออเดอร์เรียบร้อยแล้ว!</div>
+        <div class="success-desc" id="successDesc" style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+          ห้องครัวได้รับออเดอร์แล้ว กำลังเริ่มเตรียมอาหารให้คุณ
+        </div>
+        <button class="submit-order-btn" style="background: #15803d;" onclick="resetAfterOrder()">
+          สั่งอาหารเพิ่ม
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let tableNo = null;
+    let menuData = [];
+    let cart = [];
+
+    // Modal state for customizer
+    let currentItem = null;
+    let modalMeat = { name: 'หมูสับ', price: 0 };
+    let modalEggs = []; // [{ name, price }]
+    let modalPortion = { name: 'ปกติ', price: 0 };
+    let modalSpice = 'เผ็ดปกติ';
+    let modalQty = 1;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      parseTableFromUrl();
+      fetchMenu();
+    });
+
+    function parseTableFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tableParam = urlParams.get('table');
+      const tableNum = parseInt(tableParam, 10);
+
+      const tableBadge = document.getElementById('tableBadge');
+      const warningBanner = document.getElementById('warningBanner');
+
+      if (!isNaN(tableNum) && tableNum >= 1 && tableNum <= 4) {
+        tableNo = tableNum;
+        tableBadge.textContent = `โต๊ะ ${tableNo}`;
+        document.getElementById('modalTableText').textContent = `โต๊ะ ${tableNo}`;
+        warningBanner.style.display = 'none';
+      } else {
+        tableBadge.textContent = 'ไม่ระบุโต๊ะ';
+        warningBanner.style.display = 'block';
+        warningBanner.innerHTML = `⚠️ <strong>ตรวจไม่พบเลขโต๊ะที่ถูกต้อง (1-4)</strong><br>กรุณาสแกน QR Code ประจำโต๊ะของคุณใหม่อีกครั้ง`;
+      }
+    }
+
+    async function fetchMenu() {
+      try {
+        const res = await fetch('/api/menu');
+        const json = await res.json();
+
+        if (json.success && json.data) {
+          menuData = json.data;
+          renderMenu(menuData);
+        } else {
+          document.getElementById('menuContainer').innerHTML = '<div style="text-align:center; padding: 20px; color: red;">ไม่สามารถโหลดเมนูได้</div>';
+        }
+      } catch (err) {
+        console.error('Fetch menu error:', err);
+        document.getElementById('menuContainer').innerHTML = '<div style="text-align:center; padding: 20px; color: red;">เกิดข้อผิดพลาดในการเชื่อมต่อ</div>';
+      }
+    }
+
+    function renderMenu(categories) {
+      const container = document.getElementById('menuContainer');
+      const nav = document.getElementById('categoryNav');
+
+      container.innerHTML = '';
+      nav.innerHTML = '';
+
+      categories.forEach((cat, index) => {
+        const catBtn = document.createElement('a');
+        catBtn.href = `#cat-${cat.id}`;
+        catBtn.className = `cat-btn ${index === 0 ? 'active' : ''}`;
+        catBtn.textContent = cat.name;
+        catBtn.onclick = () => {
+          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+          catBtn.classList.add('active');
+        };
+        nav.appendChild(catBtn);
+
+        const section = document.createElement('div');
+        section.className = 'menu-section';
+        section.id = `cat-${cat.id}`;
+
+        const title = document.createElement('div');
+        title.className = 'section-title';
+        title.textContent = cat.name;
+        section.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'menu-grid';
+
+        cat.items.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'menu-card';
+          card.onclick = () => openOptionModal(item);
+          card.innerHTML = `
+            <div class="menu-info">
+              <div class="menu-name">${item.name}</div>
+              ${item.description ? `<div class="menu-desc">${item.description}</div>` : ''}
+              <div class="menu-price">฿${item.price.toFixed(2)}</div>
+            </div>
+            <div class="menu-action">
+              <button class="add-btn" onclick="event.stopPropagation(); openOptionModal(findItemById(${item.id}))">
+                + เลือก
+              </button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        container.appendChild(section);
+      });
+    }
+
+    function findItemById(id) {
+      for (const cat of menuData) {
+        const found = cat.items.find(i => i.id === id);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    function openOptionModal(item) {
+      if (!item) return;
+      currentItem = item;
+      modalQty = 1;
+      document.getElementById('modalQtyDisplay').textContent = '1';
+      document.getElementById('optItemName').textContent = item.name;
+      document.getElementById('optItemBasePrice').textContent = `฿${item.price.toFixed(2)}`;
+      document.getElementById('optSpecialNote').value = '';
+
+      const isDrinkOrPlain = item.name.includes('โค้ก') || item.name.includes('ชเวปส์') || 
+                             item.name.includes('น้ำส้ม') || item.name.includes('น้ำเปล่า') || 
+                             item.name === 'ข้าวเปล่า';
+
+      const meatSec = document.getElementById('meatSection');
+      const eggSec = document.getElementById('eggSection');
+      const portionSec = document.getElementById('portionSection');
+      const spiceSec = document.getElementById('spiceSection');
+
+      if (isDrinkOrPlain) {
+        meatSec.style.display = 'none';
+        eggSec.style.display = 'none';
+        portionSec.style.display = 'none';
+        spiceSec.style.display = 'none';
+        modalMeat = { name: '', price: 0 };
+        modalEggs = [];
+        modalPortion = { name: '', price: 0 };
+        modalSpice = '';
+      } else {
+        meatSec.style.display = 'block';
+        eggSec.style.display = 'block';
+        portionSec.style.display = 'block';
+        spiceSec.style.display = 'block';
+        
+        // Reset defaults
+        modalMeat = { name: 'หมูสับ', price: 0 };
+        document.querySelectorAll('#meatList .option-row').forEach(row => {
+          const isDefault = row.querySelector('input').value === 'หมูสับ';
+          row.classList.toggle('selected', isDefault);
+          row.querySelector('input').checked = isDefault;
+        });
+
+        modalEggs = [];
+        document.querySelectorAll('#eggSection .option-row').forEach(row => {
+          row.classList.remove('selected');
+          row.querySelector('input').checked = false;
+        });
+
+        modalPortion = { name: 'ปกติ', price: 0 };
+        document.querySelectorAll('#portionSection .option-row').forEach(row => {
+          const isDefault = row.querySelector('input').value === 'ปกติ';
+          row.classList.toggle('selected', isDefault);
+          row.querySelector('input').checked = isDefault;
+        });
+
+        modalSpice = 'เผ็ดปกติ';
+        document.querySelectorAll('.spice-pill').forEach((pill, i) => {
+          pill.classList.toggle('selected', i === 0);
+        });
+      }
+
+      recalculateModalPrice();
+      document.getElementById('itemOptionModal').classList.add('open');
+    }
+
+    function closeOptionModal() {
+      document.getElementById('itemOptionModal').classList.remove('open');
+    }
+
+    function selectMeat(meatName, price, rowElem) {
+      modalMeat = { name: meatName, price: price };
+      document.querySelectorAll('#meatList .option-row').forEach(r => r.classList.remove('selected'));
+      rowElem.classList.add('selected');
+      rowElem.querySelector('input').checked = true;
+      recalculateModalPrice();
+    }
+
+    function toggleEgg(eggName, price, rowElem) {
+      const checkbox = rowElem.querySelector('input');
+      checkbox.checked = !checkbox.checked;
+      rowElem.classList.toggle('selected', checkbox.checked);
+
+      modalEggs = [];
+      document.querySelectorAll('#eggSection input:checked').forEach(cb => {
+        modalEggs.push({
+          name: cb.value,
+          price: parseFloat(cb.dataset.price) || 0
+        });
+      });
+
+      recalculateModalPrice();
+    }
+
+    function selectPortion(portionName, price, rowElem) {
+      modalPortion = { name: portionName, price: price };
+      document.querySelectorAll('#portionSection .option-row').forEach(r => r.classList.remove('selected'));
+      rowElem.classList.add('selected');
+      rowElem.querySelector('input').checked = true;
+      recalculateModalPrice();
+    }
+
+    function selectSpice(spiceName, pillElem) {
+      modalSpice = spiceName;
+      document.querySelectorAll('.spice-pill').forEach(p => p.classList.remove('selected'));
+      pillElem.classList.add('selected');
+    }
+
+    function changeModalQty(delta) {
+      modalQty = Math.max(1, modalQty + delta);
+      document.getElementById('modalQtyDisplay').textContent = modalQty;
+      recalculateModalPrice();
+    }
+
+    function recalculateModalPrice() {
+      if (!currentItem) return;
+      let unit = currentItem.price + modalMeat.price + modalPortion.price;
+      modalEggs.forEach(e => unit += e.price);
+      let total = unit * modalQty;
+      document.getElementById('modalTotalCalculated').textContent = `฿${total.toFixed(2)}`;
+    }
+
+    function confirmAddToCart() {
+      if (!currentItem) return;
+
+      let unitPrice = currentItem.price + modalMeat.price + modalPortion.price;
+      modalEggs.forEach(e => unitPrice += e.price);
+
+      const note = document.getElementById('optSpecialNote').value.trim();
+
+      // Structure text for backend
+      const parts = [];
+      if (modalMeat.name) parts.push(`เนื้อสัตว์: ${modalMeat.name}`);
+      if (modalEggs.length > 0) parts.push(`เพิ่มไข่: ${modalEggs.map(e => e.name).join(', ')}`);
+      if (modalPortion.name) parts.push(`ปริมาณ: ${modalPortion.name}`);
+      if (modalSpice) parts.push(modalSpice);
+      if (note) parts.push(`หมายเหตุ: ${note}`);
+
+      cart.push({
+        cartId: Date.now() + Math.random(),
+        menu_item_id: currentItem.id,
+        item_name: currentItem.name,
+        basePrice: currentItem.price,
+        unitPrice: unitPrice,
+        quantity: modalQty,
+        meat: modalMeat,
+        eggs: [...modalEggs],
+        portion: modalPortion,
+        spice: modalSpice,
+        itemNote: note,
+        special_request: parts.join(' | '),
+        totalPrice: unitPrice * modalQty
+      });
+
+      closeOptionModal();
+      updateCartBar();
+    }
+
+    function updateCartBar() {
+      let totalQty = 0;
+      let grandTotal = 0;
+
+      cart.forEach(item => {
+        totalQty += item.quantity;
+        grandTotal += item.totalPrice;
+      });
+
+      const bottomBar = document.getElementById('bottomBar');
+      const cartCount = document.getElementById('cartCount');
+      const cartTotal = document.getElementById('cartTotal');
+
+      if (totalQty > 0) {
+        bottomBar.classList.add('show');
+        cartCount.textContent = `${totalQty} รายการ`;
+        cartTotal.textContent = `฿${grandTotal.toFixed(2)}`;
+      } else {
+        bottomBar.classList.remove('show');
+        closeCartModal();
+      }
+    }
+
+    function openCartModal() {
+      if (cart.length === 0) return;
+      renderStructuredCartTable();
+      document.getElementById('cartModal').classList.add('open');
+    }
+
+    function closeCartModal() {
+      document.getElementById('cartModal').classList.remove('open');
+    }
+
+    function changeCartQty(cartId, delta) {
+      const idx = cart.findIndex(c => c.cartId === cartId);
+      if (idx === -1) return;
+
+      cart[idx].quantity += delta;
+      if (cart[idx].quantity <= 0) {
+        cart.splice(idx, 1);
+      } else {
+        cart[idx].totalPrice = cart[idx].unitPrice * cart[idx].quantity;
+      }
+
+      updateCartBar();
+      renderStructuredCartTable();
+    }
+
+    // Render สรุปคำสั่งซื้อสไตล์ Grab / LINE MAN (ตามรูปภาพของผู้ใช้)
+    function renderStructuredCartTable() {
+      const tbody = document.getElementById('cartItemsTableBody');
+      const subTotalElem = document.getElementById('summarySubTotal');
+      const grandTotalElem = document.getElementById('summaryGrandTotal');
+      tbody.innerHTML = '';
+
+      let grandTotal = 0;
+
+      if (cart.length === 0) {
+        closeCartModal();
+        return;
+      }
+
+      cart.forEach(item => {
+        grandTotal += item.totalPrice;
+
+        const block = document.createElement('div');
+        block.className = 'summary-item-block';
+
+        // 1. แถวชื่ออาหารหลัก
+        let mainRowHtml = `
+          <div class="summary-main-row">
+            <div>${item.item_name}</div>
+            <div>${item.basePrice.toFixed(2)}</div>
+            <div>${item.quantity}</div>
+            <div>${(item.basePrice * item.quantity).toFixed(2)}</div>
+          </div>
+        `;
+
+        // 2. หมายเหตุ (สีส้ม)
+        let noteHtml = item.itemNote ? `<div class="summary-note-text">${item.itemNote}</div>` : '';
+
+        // 3. แถวย่อยตัวเลือกเสริม
+        let subRowsHtml = '';
+
+        if (item.eggs && item.eggs.length > 0) {
+          item.eggs.forEach(egg => {
+            subRowsHtml += `
+              <div class="summary-sub-row">
+                <div class="summary-sub-type">เพิ่มไข่</div>
+                <div class="summary-sub-val">${egg.name}</div>
+                <div>${egg.price.toFixed(2)}</div>
+                <div>${(egg.price * item.quantity).toFixed(2)}</div>
+              </div>
+            `;
+          });
+        }
+
+        if (item.meat && item.meat.name) {
+          subRowsHtml += `
+            <div class="summary-sub-row">
+              <div class="summary-sub-type">เนื้อสัตว์</div>
+              <div class="summary-sub-val">${item.meat.name}</div>
+              <div>${item.meat.price.toFixed(2)}</div>
+              <div>${(item.meat.price * item.quantity).toFixed(2)}</div>
+            </div>
+          `;
+        }
+
+        if (item.portion && item.portion.name) {
+          subRowsHtml += `
+            <div class="summary-sub-row">
+              <div class="summary-sub-type">ปริมาณ</div>
+              <div class="summary-sub-val">${item.portion.name}</div>
+              <div>${item.portion.price.toFixed(2)}</div>
+              <div>${(item.portion.price * item.quantity).toFixed(2)}</div>
+            </div>
+          `;
+        }
+
+        if (item.spice) {
+          subRowsHtml += `
+            <div class="summary-sub-row">
+              <div class="summary-sub-type">ความเผ็ด</div>
+              <div class="summary-sub-val">${item.spice}</div>
+              <div>0.00</div>
+              <div>0.00</div>
+            </div>
+          `;
+        }
+
+        // 4. ปุ่มปรับจำนวน
+        let controlsHtml = `
+          <div class="summary-qty-controls">
+            <span style="font-size: 11px; color: #94a3b8; margin-right: 6px;">ปรับจำนวน:</span>
+            <button class="qty-btn" onclick="changeCartQty(${item.cartId}, -1)">-</button>
+            <span class="qty-display">${item.quantity}</span>
+            <button class="qty-btn" onclick="changeCartQty(${item.cartId}, 1)">+</button>
+          </div>
+        `;
+
+        block.innerHTML = mainRowHtml + noteHtml + subRowsHtml + controlsHtml;
+        tbody.appendChild(block);
+      });
+
+      subTotalElem.textContent = `฿${grandTotal.toFixed(2)}`;
+      grandTotalElem.textContent = `฿${grandTotal.toFixed(2)}`;
+    }
+
+    async function submitOrder() {
+      if (!tableNo) {
+        alert('⚠️ ไม่พบหมายเลขโต๊ะ ไม่สามารถส่งออเดอร์ได้ กรุณาสแกน QR Code ประจำโต๊ะ');
+        return;
+      }
+
+      if (cart.length === 0) {
+        alert('กรุณาเลือกรายการอาหารก่อนยืนยัน');
+        return;
+      }
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '⏳ กำลังส่งคำสั่งซื้อ...';
+
+      const itemsArray = cart.map(val => ({
+        menu_item_id: val.menu_item_id,
+        quantity: val.quantity,
+        unit_price: val.unitPrice,
+        special_request: val.special_request || ''
+      }));
+
+      const customerNote = document.getElementById('orderNote').value.trim();
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            table_no: tableNo,
+            customer_note: customerNote,
+            items: itemsArray
+          })
+        });
+
+        const json = await res.json();
+
+        if (json.success) {
+          closeCartModal();
+          document.getElementById('successDesc').textContent = 
+            `คำสั่งซื้อ #${json.data.order_id} สำหรับโต๊ะ ${tableNo} ถูกส่งไปยังห้องครัวเรียบร้อยแล้ว`;
+          document.getElementById('successModal').classList.add('open');
+          
+          cart = [];
+          document.getElementById('orderNote').value = '';
+          updateCartBar();
+        } else {
+          alert('❌ เกิดข้อผิดพลาด: ' + (json.error || 'ไม่สามารถส่งออเดอร์ได้'));
+        }
+      } catch (err) {
+        console.error('Submit order error:', err);
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 ยืนยันการสั่งซื้อ';
+      }
+    }
+
+    function resetAfterOrder() {
+      document.getElementById('successModal').classList.remove('open');
+    }
+  </script>
+</body>
+</html>
