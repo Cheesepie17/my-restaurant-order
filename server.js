@@ -12,11 +12,12 @@ const fs = require('fs');
 
 // Helper หา path ของไฟล์ HTML (รองรับทั้งใน public/ และ root)
 function getHtmlPath(filename) {
-  const publicPath = path.join(__dirname, 'public', filename);
-  if (fs.existsSync(publicPath)) {
-    return publicPath;
+  const rootPath = path.join(__dirname, filename);
+  if (fs.existsSync(rootPath)) {
+    return rootPath;
   }
-  return path.join(__dirname, filename);
+  return path.join(__dirname, 'public', filename);
+}
 }
 
 // Middleware
