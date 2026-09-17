@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้าจอห้องครัว & พนักงาน - Live Orders Dashboard</title>
+  <title>หน้าจอห้องครัว & สรุปยอดขาย - Live Orders Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -19,6 +19,7 @@
       --served: #10b981;
       --served-bg: rgba(16, 185, 129, 0.15);
       --cancelled: #64748b;
+      --accent: #ec4899;
     }
 
     * {
@@ -42,7 +43,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
     }
@@ -84,46 +85,98 @@
     .controls-area {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .filter-btn {
-      background: var(--card-bg);
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      padding: 8px 16px;
+    .btn {
+      padding: 8px 14px;
       border-radius: 8px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       transition: all 0.2s;
     }
 
-    .filter-btn.active {
+    .btn.active {
       background: #3b82f6;
       color: white;
       border-color: #3b82f6;
     }
 
-    .sound-toggle-btn {
-      background: #334155;
+    .btn-report {
+      background: #10b981;
       color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      border-color: #10b981;
     }
 
-    /* Stats Overview */
+    .btn-report:hover {
+      background: #059669;
+    }
+
+    /* Daily Revenue Dashboard Summary Cards */
+    .revenue-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .rev-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rev-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .rev-card.card-sales::before { background: #10b981; }
+    .rev-card.card-orders::before { background: #3b82f6; }
+    .rev-card.card-served::before { background: #f59e0b; }
+    .rev-card.card-active::before { background: #ec4899; }
+
+    .rev-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .rev-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .rev-sub {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* 4 Tables Quick Bar */
     .table-status-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     @media (max-width: 768px) {
@@ -169,21 +222,11 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s, border-color 0.2s;
     }
 
-    .order-card.status-pending {
-      border-color: var(--pending);
-    }
-
-    .order-card.status-preparing {
-      border-color: var(--preparing);
-    }
-
-    .order-card.status-served {
-      border-color: #334155;
-      opacity: 0.75;
-    }
+    .order-card.status-pending { border-color: var(--pending); }
+    .order-card.status-preparing { border-color: var(--preparing); }
+    .order-card.status-served { border-color: #334155; opacity: 0.75; }
 
     .order-card-header {
       display: flex;
@@ -212,20 +255,9 @@
       border-radius: 9999px;
     }
 
-    .status-pending .status-badge {
-      background: var(--pending-bg);
-      color: var(--pending);
-    }
-
-    .status-preparing .status-badge {
-      background: var(--preparing-bg);
-      color: var(--preparing);
-    }
-
-    .status-served .status-badge {
-      background: var(--served-bg);
-      color: var(--served);
-    }
+    .status-pending .status-badge { background: var(--pending-bg); color: var(--pending); }
+    .status-preparing .status-badge { background: var(--preparing-bg); color: var(--preparing); }
+    .status-served .status-badge { background: var(--served-bg); color: var(--served); }
 
     .items-list {
       flex: 1;
@@ -235,7 +267,7 @@
     .order-item-row {
       display: flex;
       flex-direction: column;
-      padding: 6px 0;
+      padding: 8px 0;
       border-bottom: 1px dashed rgba(255,255,255,0.08);
     }
 
@@ -246,26 +278,18 @@
     .item-header {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
+      font-size: 15px;
     }
 
-    .item-title {
-      font-weight: 600;
-    }
-
-    .item-qty {
-      font-weight: 700;
-      color: #38bdf8;
-    }
+    .item-title { font-weight: 600; }
+    .item-qty { font-weight: 700; color: #38bdf8; }
 
     .item-special {
-      font-size: 12px;
-      color: #f87171;
-      background: rgba(248, 113, 113, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-top: 3px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
       display: inline-block;
+      font-weight: 500;
     }
 
     .order-note-box {
@@ -292,11 +316,7 @@
       color: #f8fafc;
     }
 
-    .action-btn-group {
-      display: flex;
-      gap: 6px;
-    }
-
+    .action-btn-group { display: flex; gap: 6px; }
     .action-btn {
       padding: 8px 12px;
       border-radius: 8px;
@@ -304,28 +324,93 @@
       font-weight: 600;
       border: none;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
 
-    .action-btn:hover {
-      opacity: 0.9;
+    .btn-start { background: #3b82f6; color: white; }
+    .btn-done { background: #10b981; color: white; }
+
+    /* Report Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
-    .btn-start {
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .close-btn {
+      background: #334155;
+      color: #fff;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .report-table th, .report-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-table th {
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .report-table td:last-child, .report-table th:last-child {
+      text-align: right;
+    }
+
+    .top-dish-badge {
       background: #3b82f6;
       color: white;
-    }
-
-    .btn-done {
-      background: #10b981;
-      color: white;
-    }
-
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -344,19 +429,46 @@
     </div>
 
     <div class="controls-area">
-      <button id="filterActive" class="filter-btn active" onclick="setFilter('active')">
+      <button class="btn btn-report" onclick="openReportModal()">
+        📊 สรุปรายงานยอดขาย
+      </button>
+      <button id="filterActive" class="btn active" onclick="setFilter('active')">
         🔥 กำลังดำเนินการ (<span id="activeCount">0</span>)
       </button>
-      <button id="filterAll" class="filter-btn" onclick="setFilter('all')">
+      <button id="filterAll" class="btn" onclick="setFilter('all')">
         📋 ทั้งหมด (<span id="allCount">0</span>)
       </button>
-      <button id="soundBtn" class="sound-toggle-btn" onclick="toggleSound()">
-        🔔 เสียงแจ้งเตือน: เปิด
+      <button id="soundBtn" class="btn" onclick="toggleSound()">
+        🔔 เสียง: เปิด
       </button>
     </div>
   </div>
 
-  <!-- สถานะ 4 โต๊ะ -->
+  <!-- Daily Revenue & Sales Summary Cards -->
+  <div class="revenue-summary-grid">
+    <div class="rev-card card-sales">
+      <span class="rev-label">💰 ยอดขายวันนี้ (ทั้งหมด)</span>
+      <span class="rev-value" id="todaySales">฿0</span>
+      <span class="rev-sub" id="todayDateStr">ประจำวันนี้</span>
+    </div>
+    <div class="rev-card card-orders">
+      <span class="rev-label">🧾 จำนวนออเดอร์วันนี้</span>
+      <span class="rev-value" id="todayOrdersCount">0</span>
+      <span class="rev-sub">ออเดอร์จากทุกโต๊ะ</span>
+    </div>
+    <div class="rev-card card-served">
+      <span class="rev-label">✅ เสิร์ฟสำเร็จแล้ว</span>
+      <span class="rev-value" id="todayServedSales">฿0</span>
+      <span class="rev-sub" id="todayServedCount">0 ออเดอร์</span>
+    </div>
+    <div class="rev-card card-active">
+      <span class="rev-label">⏳ รอปรุง / ค้างทำ</span>
+      <span class="rev-value" id="todayPendingCount">0</span>
+      <span class="rev-sub">ออเดอร์ที่กำลังรอดำเนินการ</span>
+    </div>
+  </div>
+
+  <!-- โต๊ะ 1-4 -->
   <div class="table-status-grid">
     <div class="table-quick-card" id="tableCard-1">
       <span class="table-name">โต๊ะ 1</span>
@@ -378,69 +490,110 @@
 
   <!-- รายการออเดอร์ -->
   <div id="ordersContainer" class="orders-container">
-    <div class="empty-state">
-      <h3>⏳ กำลังโหลดรายการออเดอร์...</h3>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #94a3b8;">
+      ⏳ กำลังโหลดรายการออเดอร์...
+    </div>
+  </div>
+
+  <!-- Sales Report Modal -->
+  <div id="reportModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 style="font-size: 18px; font-weight: 700;">📊 รายงานยอดขายและสถิติ</h2>
+        <button class="close-btn" onclick="closeReportModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- 1. ยอดขายย้อนหลังตามวัน -->
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #34d399;">📅 สรุปยอดขายแต่ละวัน</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>วันที่</th>
+              <th>จำนวนออเดอร์</th>
+              <th>เสิร์ฟสำเร็จ</th>
+              <th>ยอดขายรวม</th>
+            </tr>
+          </thead>
+          <tbody id="dailyReportTableBody">
+            <tr><td colspan="4" style="text-align:center;">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+
+        <!-- 2. เมนูขายดี Top 5 -->
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #60a5fa;">🏆 5 อันดับเมนูขายดีที่สุด</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>อันดับ</th>
+              <th>ชื่อเมนู</th>
+              <th>จำนวนที่ขายได้</th>
+              <th>ยอดเงินรวม</th>
+            </tr>
+          </thead>
+          <tbody id="topDishesTableBody">
+            <tr><td colspan="4" style="text-align:center;">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+
+        <!-- 3. ยอดขายแยกตามโต๊ะวันนี้ -->
+        <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #fbbf24;">🪑 ยอดขายแยกตามโต๊ะ (วันนี้)</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>หมายเลขโต๊ะ</th>
+              <th>จำนวนออเดอร์</th>
+              <th>ยอดขาย</th>
+            </tr>
+          </thead>
+          <tbody id="tableStatsTableBody">
+            <tr><td colspan="3" style="text-align:center;">กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+
+      </div>
     </div>
   </div>
 
   <script>
     let ordersList = [];
     let knownOrderIds = new Set();
-    let currentFilter = 'active'; // 'active' หรือ 'all'
+    let currentFilter = 'active';
     let soundEnabled = true;
     let audioCtx = null;
 
-    // Web Audio API Chime Synthesizer
     function playOrderChime() {
       if (!soundEnabled) return;
-
       try {
-        if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
 
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-
-        // เล่นเสียงแจ้งเตือนแบบกระดิ่งสองโน้ต (G5 -> C6)
         const notes = [784, 1046.5];
         notes.forEach((freq, index) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.15);
-
           gain.gain.setValueAtTime(0.3, audioCtx.currentTime + index * 0.15);
           gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + index * 0.15 + 0.4);
-
           osc.connect(gain);
           gain.connect(audioCtx.destination);
-
           osc.start(audioCtx.currentTime + index * 0.15);
           osc.stop(audioCtx.currentTime + index * 0.15 + 0.4);
         });
 
-        // สั่งสั่นอุปกรณ์ (ถ้ารองรับ เช่น มือถือแอนดรอยด์ของพนักงาน)
-        if (navigator.vibrate) {
-          navigator.vibrate([200, 100, 200]);
-        }
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
       } catch (err) {
-        console.warn('Audio chime warning:', err);
+        console.warn('Audio warning:', err);
       }
     }
 
     function toggleSound() {
       soundEnabled = !soundEnabled;
       const btn = document.getElementById('soundBtn');
-      btn.textContent = soundEnabled ? '🔔 เสียงแจ้งเตือน: เปิด' : '🔕 เสียงแจ้งเตือน: ปิด';
-      btn.style.background = soundEnabled ? '#334155' : '#7f1d1d';
-      
-      // Init audio context on user interaction
-      if (soundEnabled && !audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
+      btn.textContent = soundEnabled ? '🔔 เสียง: เปิด' : '🔕 เสียง: ปิด';
+      btn.style.background = soundEnabled ? 'var(--card-bg)' : '#7f1d1d';
+      if (soundEnabled && !audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
 
     function setFilter(filter) {
@@ -458,7 +611,6 @@
         if (json.success && Array.isArray(json.data)) {
           const freshOrders = json.data;
 
-          // ตรวจสอบว่ามีออเดอร์ใหม่ที่ไม่เคยพบมาก่อนหรือไม่
           let hasNewOrders = false;
           freshOrders.forEach(order => {
             if (!knownOrderIds.has(order.id)) {
@@ -469,21 +621,50 @@
             }
           });
 
-          if (hasNewOrders) {
-            playOrderChime();
-          }
+          if (hasNewOrders) playOrderChime();
 
           ordersList = freshOrders;
           updateTableSummaries();
+          calculateTodayRevenue();
           renderOrders();
         }
       } catch (err) {
-        console.error('Fetch orders polling error:', err);
+        console.error('Fetch orders error:', err);
       }
     }
 
+    function calculateTodayRevenue() {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      let totalSales = 0;
+      let totalOrders = 0;
+      let servedSales = 0;
+      let servedCount = 0;
+      let pendingCount = 0;
+
+      ordersList.forEach(o => {
+        const orderDate = (o.created_at || '').slice(0, 10);
+        if (orderDate === todayStr || !orderDate) {
+          if (o.status !== 'cancelled') {
+            totalOrders++;
+            totalSales += Number(o.total_price) || 0;
+            if (o.status === 'served') {
+              servedSales += Number(o.total_price) || 0;
+              servedCount++;
+            } else {
+              pendingCount++;
+            }
+          }
+        }
+      });
+
+      document.getElementById('todaySales').textContent = `฿${totalSales.toLocaleString('th-TH')}`;
+      document.getElementById('todayOrdersCount').textContent = `${totalOrders} ออเดอร์`;
+      document.getElementById('todayServedSales').textContent = `฿${servedSales.toLocaleString('th-TH')}`;
+      document.getElementById('todayServedCount').textContent = `${servedCount} เสิร์ฟแล้ว`;
+      document.getElementById('todayPendingCount').textContent = `${pendingCount} กำลังทำ`;
+    }
+
     function updateTableSummaries() {
-      // นับจำนวนออเดอร์ Active ของแต่ละโต๊ะ (1-4)
       const tableCounts = { 1: 0, 2: 0, 3: 0, 4: 0 };
       let activeTotal = 0;
 
@@ -528,7 +709,7 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="empty-state">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
             <h3 style="font-size: 18px; margin-bottom: 6px;">🎉 ไม่มีออเดอร์ค้างในขณะนี้</h3>
             <p>เมื่อลูกค้าสั่งอาหาร ออเดอร์จะแสดงและส่งเสียงเตือนขึ้นที่นี่ทันที</p>
           </div>
@@ -554,14 +735,16 @@
           if (item.special_request) {
             const parts = item.special_request.split('|').map(p => p.trim()).filter(Boolean);
             optionTags = parts.map(part => {
-              if (part.startsWith('เนื้อ:')) {
+              if (part.startsWith('เนื้อสัตว์:')) {
                 return `<span class="item-special" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);">🥩 ${part}</span>`;
-              } else if (part.startsWith('เพิ่ม:')) {
+              } else if (part.startsWith('เพิ่มไข่:') || part.startsWith('เพิ่ม:')) {
                 return `<span class="item-special" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);">🍳 ${part}</span>`;
+              } else if (part.startsWith('ปริมาณ:')) {
+                return `<span class="item-special" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">🍚 ${part}</span>`;
               } else if (part.includes('เผ็ด')) {
                 return `<span class="item-special" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">🌶️ ${part}</span>`;
               }
-              return `<span class="item-special">${part}</span>`;
+              return `<span class="item-special" style="background: rgba(255,255,255,0.08); color: #fde047;">${part}</span>`;
             }).join(' ');
           }
 
@@ -575,7 +758,6 @@
             </div>
           `;
         }).join('');
-
 
         let actionBtns = '';
         if (order.status === 'pending') {
@@ -605,7 +787,7 @@
             ${itemsHtml}
           </div>
 
-          ${order.customer_note ? `<div class="order-note-box">📝 หมายเหตุ: ${order.customer_note}</div>` : ''}
+          ${order.customer_note ? `<div class="order-note-box">📝 หมายเหตุโต๊ะ: ${order.customer_note}</div>` : ''}
 
           <div class="order-footer">
             <div class="order-total-price">฿${order.total_price}</div>
@@ -630,15 +812,76 @@
         const json = await res.json();
         if (json.success) {
           fetchOrders();
-        } else {
-          alert('ไม่สามารถอัปเดตสถานะได้: ' + json.error);
         }
       } catch (err) {
         console.error('Update status error:', err);
       }
     }
 
-    // เริ่มต้นทำงาน และตั้ง Polling ทุก 3 วินาที
+    // Reports Modal
+    async function openReportModal() {
+      document.getElementById('reportModal').classList.add('open');
+      try {
+        const res = await fetch('/api/reports/daily');
+        const json = await res.json();
+        if (json.success && json.data) {
+          renderReportsData(json.data);
+        }
+      } catch (e) {
+        console.error('Fetch report error:', e);
+      }
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.remove('open');
+    }
+
+    function renderReportsData(data) {
+      // 1. Daily stats
+      const dailyTbody = document.getElementById('dailyReportTableBody');
+      if (data.daily && data.daily.length > 0) {
+        dailyTbody.innerHTML = data.daily.map(d => `
+          <tr>
+            <td><strong>${d.order_date}</strong></td>
+            <td>${d.total_orders} รายการ</td>
+            <td>฿${(d.served_sales || 0).toLocaleString('th-TH')}</td>
+            <td style="color: #34d399; font-weight:700;">฿${(d.total_sales || 0).toLocaleString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } else {
+        dailyTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">ยังไม่มีข้อมูลยอดขาย</td></tr>';
+      }
+
+      // 2. Top Dishes
+      const topTbody = document.getElementById('topDishesTableBody');
+      if (data.topDishes && data.topDishes.length > 0) {
+        topTbody.innerHTML = data.topDishes.map((dish, i) => `
+          <tr>
+            <td><span class="top-dish-badge">อันดับ ${i + 1}</span></td>
+            <td><strong>${dish.item_name}</strong></td>
+            <td>${dish.total_qty} จาน</td>
+            <td style="color: #60a5fa; font-weight:700;">฿${(dish.total_amount || 0).toLocaleString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } else {
+        topTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">ยังไม่มีข้อมูล</td></tr>';
+      }
+
+      // 3. Table stats
+      const tableTbody = document.getElementById('tableStatsTableBody');
+      if (data.tableStats && data.tableStats.length > 0) {
+        tableTbody.innerHTML = data.tableStats.map(t => `
+          <tr>
+            <td><strong>โต๊ะ ${t.table_no}</strong></td>
+            <td>${t.total_orders} ออเดอร์</td>
+            <td style="color: #fbbf24; font-weight:700;">฿${(t.table_sales || 0).toLocaleString('th-TH')}</td>
+          </tr>
+        `).join('');
+      } else {
+        tableTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">ยังไม่มีข้อมูลวันนี้</td></tr>';
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       fetchOrders(true);
       setInterval(() => {
